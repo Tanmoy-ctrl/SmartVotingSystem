@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Login</title>
+</head>
+<body>
+  <h2>Login</h2>
+  <form id="loginForm">
+    <input id="username" placeholder="username" required /><br/>
+    <input id="password" type="password" placeholder="password" required /><br/>
+    <button type="submit">Login</button>
+  </form>
+
+  <button id="logoutBtn">Logout</button>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username, password})
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.msg);
+        // tokens are set in HttpOnly cookies by server
+        // redirect to admin page
+        window.location = '/admin';
+      } else {
+        alert(data.msg || 'Login failed');
+      }
+    });
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      const res = await fetch('/api/logout', {method: 'POST'});
+      const data = await res.json();
+      alert(data.msg);
+      window.location = '/';
+    });
+
+    // Optional: periodically call /token/refresh to keep session alive before access token expires.
+    // But since we're using cookies + short access token, browser will need to call refresh endpoint.
+  </script>
+</body>
+</html>
+

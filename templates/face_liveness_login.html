@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Face Liveness Login</title>
+  <link rel="stylesheet" href="C:\Users\TANMOY\Desktop\Projects\SmartVotingSystem\static\style.css">
+</head>
+<body>
+  <h2>Face Login with Liveness Detection</h2>
+  <input type="text" id="aadhaar" placeholder="Enter Aadhaar" required>
+  <video id="video" width="320" height="240" autoplay></video>
+  <button onclick="captureFrames()">Login</button>
+  <p id="message"></p>
+
+  <script>
+    const video = document.getElementById("video");
+    navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+      video.srcObject = stream;
+    });
+
+    async function captureFrames() {
+      let frames = [];
+      for (let i = 0; i < 5; i++) {  // Capture 5 frames
+        let canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext("2d").drawImage(video, 0, 0);
+        frames.push(canvas.toDataURL("image/png"));
+        await new Promise(r => setTimeout(r, 500)); // wait 0.5s
+      }
+
+      let aadhaar = document.getElementById("aadhaar").value;
+
+      let res = await fetch("/api/face-liveness-login", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({aadhaar, frames})
+      });
+      let data = await res.json();
+      document.getElementById("message").innerText = data.message || data.error;
+    }
+  </script>
+</body>
+</html>
